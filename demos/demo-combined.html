@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Bool値管理: 統合デモ - 実用的なアプリケーション</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .info-box {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .info-box strong {
+            display: block;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        /* ========================================
+           実用例1: 設定パネル（複数のBool値管理）
+           :checked + :target + :focus-within の組み合わせ
+           ======================================== */
+        .settings-panel {
+            margin: 30px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .settings-header {
+            padding: 20px;
+            background: #667eea;
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .settings-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .settings-tabs input[type="radio"] {
+            display: none;
+        }
+
+        .settings-tabs label {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .settings-tabs label:last-child {
+            border-right: none;
+        }
+
+        .settings-tabs label:hover {
+            background: #e8e8e8;
+        }
+
+        /* タブがアクティブ（Bool値 = true） */
+        .settings-tabs input[type="radio"]:checked + label {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .settings-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 対応するタブがチェックされた時にコンテンツを表示 */
+        #settings-general:checked ~ .settings-contents #content-general,
+        #settings-privacy:checked ~ .settings-contents #content-privacy,
+        #settings-notifications:checked ~ .settings-contents #content-notifications {
+            display: block;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        /* フォーカスがある時 */
+        .setting-item:focus-within {
+            background: #e3f2fd;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .setting-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .setting-info p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .toggle-switch {
+            position: relative;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-switch label {
+            display: block;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+            position: relative;
+        }
+
+        .toggle-switch label::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch input[type="checkbox"]:checked + label {
+            background: #4CAF50;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked + label::after {
+            transform: translateX(30px);
+        }
+
+        /* ========================================
+           実用例2: ダッシュボード（:target + :checked）
+           ======================================== */
+        .dashboard {
+            margin: 30px 0;
+        }
+
+        .dashboard-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-nav a {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            text-decoration: none;
+            background: #f0f0f0;
+            color: #666;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .dashboard-nav a:hover {
+            background: #e0e0e0;
+        }
+
+        .dashboard-section {
+            display: none;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        /* URLハッシュでセクションを表示 */
+        #dashboard-overview:target,
+        #dashboard-analytics:target,
+        #dashboard-reports:target {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* デフォルトで最初のセクションを表示 */
+        #dashboard-overview:not(:target):first-of-type {
+            display: block;
+        }
+
+        /* アクティブなナビゲーション */
+        #dashboard-overview:target ~ .dashboard-nav a[href="#dashboard-overview"],
+        #dashboard-analytics:target ~ .dashboard-nav a[href="#dashboard-analytics"],
+        #dashboard-reports:target ~ .dashboard-nav a[href="#dashboard-reports"] {
+            background: #667eea;
+            color: white;
+        }
+
+        .widget {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .widget h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .widget-content {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* ウィジェットの展開/折りたたみ */
+        .widget input[type="checkbox"] {
+            display: none;
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .widget-toggle {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .widget-toggle:hover {
+            background: #5568d3;
+        }
+
+        .widget-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s;
+        }
+
+        .widget input[type="checkbox"]:checked ~ .widget-details {
+            max-height: 500px;
+            margin-top: 15px;
+        }
+
+        .widget input[type="checkbox"]:checked + .widget-header .widget-toggle::after {
+            content: ' ▲';
+        }
+
+        .widget input[type="checkbox"]:not(:checked) + .widget-header .widget-toggle::after {
+            content: ' ▼';
+        }
+
+        /* ========================================
+           実用例3: フィルター付きギャラリー
+           ======================================== */
+        .gallery-app {
+            margin: 30px 0;
+        }
+
+        .gallery-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .gallery-filters input[type="checkbox"] {
+            display: none;
+        }
+
+        .gallery-filters label {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .gallery-filters label:hover {
+            background: #e0e0e0;
+        }
+
+        .gallery-filters input[type="checkbox"]:checked + label {
+            background: #667eea;
+            color: white;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .gallery-item-image {
+            width: 100%;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .gallery-item-info {
+            padding: 15px;
+        }
+
+        .gallery-item-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .gallery-item-category {
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        /* フィルター機能 */
+        .gallery-item {
+            display: block;
+        }
+
+        /* すべてのフィルターがオフの時は全て表示 */
+        #filter-nature:not(:checked) ~ #filter-tech:not(:checked) ~ #filter-art:not(:checked) ~ .gallery-grid .gallery-item {
+            display: block;
+        }
+
+        /* フィルターがオンの時 */
+        #filter-nature:checked ~ .gallery-grid .gallery-item:not([data-category~="nature"]),
+        #filter-tech:checked ~ .gallery-grid .gallery-item:not([data-category~="tech"]),
+        #filter-art:checked ~ .gallery-grid .gallery-item:not([data-category~="art"]) {
+            display: none;
+        }
+
+        /* 複数フィルターの組み合わせ */
+        #filter-nature:checked ~ #filter-tech:checked ~ .gallery-grid .gallery-item[data-category~="nature"],
+        #filter-nature:checked ~ #filter-tech:checked ~ .gallery-grid .gallery-item[data-category~="tech"] {
+            display: block;
+        }
+
+        #filter-nature:checked ~ #filter-art:checked ~ .gallery-grid .gallery-item[data-category~="nature"],
+        #filter-nature:checked ~ #filter-art:checked ~ .gallery-grid .gallery-item[data-category~="art"] {
+            display: block;
+        }
+
+        #filter-tech:checked ~ #filter-art:checked ~ .gallery-grid .gallery-item[data-category~="tech"],
+        #filter-tech:checked ~ #filter-art:checked ~ .gallery-grid .gallery-item[data-category~="art"] {
+            display: block;
+        }
+
+        #filter-nature:checked ~ #filter-tech:checked ~ #filter-art:checked ~ .gallery-grid .gallery-item {
+            display: block;
+        }
+
+        /* ========================================
+           実用例4: モーダルとサイドバーの組み合わせ
+           ======================================== */
+        .app-layout {
+            margin: 30px 0;
+            display: flex;
+            gap: 20px;
+            min-height: 400px;
+        }
+
+        /* サイドバートグル */
+        #sidebar-toggle {
+            display: none;
+        }
+
+        .sidebar-toggle-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: #5568d3;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .sidebar h3 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 10px 15px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .sidebar-menu a:hover {
+            background: #34495e;
+        }
+
+        /* サイドバーの表示/非表示 */
+        #sidebar-toggle:not(:checked) ~ .app-layout .sidebar {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+        }
+
+        /* モーダル */
+        .modal-trigger input[type="checkbox"] {
+            display: none;
+        }
+
+        .modal-trigger label {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 10px 5px;
+        }
+
+        .modal-trigger label:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translate(-50%, -40%); opacity: 0; }
+            to { transform: translate(-50%, -50%); opacity: 1; }
+        }
+
+        .modal-trigger input[type="checkbox"]:checked ~ .modal-overlay {
+            display: block;
+        }
+
+        .modal-content h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .close-modal:hover {
+            background: #5568d3;
+        }
+
+        /* ========================================
+           実用例5: 検索とフィルターの組み合わせ
+           ======================================== */
+        .search-filter-app {
+            margin: 30px 0;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s;
+            z-index: 10;
+        }
+
+        .search-bar:focus-within .search-suggestions {
+            max-height: 300px;
+        }
+
+        .suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background: #f8f9fa;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-options input[type="radio"] {
+            display: none;
+        }
+
+        .filter-options label {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .filter-options label:hover {
+            background: #e0e0e0;
+        }
+
+        .filter-options input[type="radio"]:checked + label {
+            background: #667eea;
+            color: white;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .result-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .result-card p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+
+        .code-example {
+            margin-top: 20px;
+            padding: 15px;
+            background: #263238;
+            color: #aed581;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+        }
+
+        .technique-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .badge-checked {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-target {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .badge-focus {
+            background: #e1f5fe;
+            color: #0277bd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 CSS Bool値管理: 統合デモ</h1>
+        <p class="subtitle">複数の手法を組み合わせた実用的なアプリケーション例</p>
+
+        <div class="info-box">
+            <strong>このデモについて</strong>
+            このページでは、:checked、:target、:focus-withinの3つの手法を組み合わせて、
+            実際のWebアプリケーションで使用できる実用的な例を紹介します。
+            各例で使用されている技術は色付きバッジで示されています。
+        </div>
+
+        <!-- 実用例1: 設定パネル -->
+        <section>
+            <h2 style="color: #667eea; margin-bottom: 20px;">
+                実用例1: 設定パネル
+                <span class="technique-badge badge-checked">:checked</span>
+                <span class="technique-badge badge-focus">:focus-within</span>
+            </h2>
+
+            <div class="settings-panel">
+                <div class="settings-header">アプリケーション設定</div>
+                
+                <input type="radio" name="settings-tab" id="settings-general" checked>
+                <input type="radio" name="settings-tab" id="settings-privacy">
+                <input type="radio" name="settings-tab" id="settings-notifications">
+                
+                <div class="settings-tabs">
+                    <label for="settings-general">一般</label>
+                    <label for="settings-privacy">プライバシー</label>
+                    <label for="settings-notifications">通知</label>
+                </div>
+
+                <div class="settings-contents">
+                    <div class="settings-content" id="content-general">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>ダークモード</h4>
+                                <p>ダークテーマを有効にします</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="dark-mode">
+                                <label for="dark-mode"></label>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>自動保存</h4>
+                                <p>変更を自動的に保存します</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="auto-save" checked>
+                                <label for="auto-save"></label>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>言語</h4>
+                                <p>表示言語を選択</p>
+                            </div>
+                            <select style="padding: 8px; border-radius: 5px; border: 2px solid #ddd;">
+                                <option>日本語</option>
+                                <option>English</option>
+                                <option>中文</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-content" id="content-privacy">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>プロフィールの公開</h4>
+                                <p>プロフィールを他のユーザーに公開します</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="public-profile" checked>
+                                <label for="public-profile"></label>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>アクティビティの追跡</h4>
+                                <p>使用状況の分析を許可します</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="tracking">
+                                <label for="tracking"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-content" id="content-notifications">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>メール通知</h4>
+                                <p>重要な更新をメールで受け取ります</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="email-notif" checked>
+                                <label for="email-notif"></label>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>プッシュ通知</h4>
+                                <p>ブラウザ通知を有効にします</p>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="push-notif">
+                                <label for="push-notif"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* タブ切り替え (:checked) */<br>
+#settings-general:checked ~ .settings-contents #content-general {<br>
+&nbsp;&nbsp;display: block;<br>
+}<br>
+<br>
+/* フォーカス時のハイライト (:focus-within) */<br>
+.setting-item:focus-within {<br>
+&nbsp;&nbsp;background: #e3f2fd;<br>
+}
+            </div>
+        </section>
+
+        <!-- 実用例2: ダッシュボード -->
+        <section style="margin-top: 50px;">
+            <h2 style="color: #667eea; margin-bottom: 20px;">
+                実用例2: ダッシュボード
+                <span class="technique-badge badge-target">:target</span>
+                <span class="technique-badge badge-checked">:checked</span>
+            </h2>
+
+            <div class="dashboard">
+                <div id="dashboard-overview" class="dashboard-section">
+                    <h3 style="color: #667eea; margin-bottom: 20px;">概要</h3>
+                    
+                    <div class="widget">
+                        <input type="checkbox" id="widget1">
+                        <div class="widget-header">
+                            <h3>今日の統計</h3>
+                            <label for="widget1" class="widget-toggle">詳細</label>
+                        </div>
+                        <div class="widget-content">
+                            <p>訪問者: 1,234 | ページビュー: 5,678</p>
+                        </div>
+                        <div class="widget-details">
+                            <p>詳細な統計情報がここに表示されます。</p>
+                            <p>• 新規訪問者: 456</p>
+                            <p>• リピーター: 778</p>
+                            <p>• 平均滞在時間: 3分24秒</p>
+                        </div>
+                    </div>
+
+                    <div class="widget">
+                        <input type="checkbox" id="widget2">
+                        <div class="widget-header">
+                            <h3>売上サマリー</h3>
+                            <label for="widget2" class="widget-toggle">詳細</label>
+                        </div>
+                        <div class="widget-content">
+                            <p>今月の売上: ¥1,234,567</p>
+                        </div>
+                        <div class="widget-details">
+                            <p>月別の詳細:</p>
+                            <p>• 先月比: +15%</p>
+                            <p>• 目標達成率: 92%</p>
+                            <p>• トップ商品: 商品A</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dashboard-analytics" class="dashboard-section">
+                    <h3 style="color: #667eea; margin-bottom: 20px;">分析</h3>
+                    <div class="widget">
+                        <h3>ユーザー行動分析</h3>
+                        <div class="widget-content">
+                            <p>ユーザーの行動パターンと傾向を分析します。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dashboard-reports" class="dashboard-section">
+                    <h3 style="color: #667eea; margin-bottom: 20px;">レポート</h3>
+                    <div class="widget">
+                        <h3>月次レポート</h3>
+                        <div class="widget-content">
+                            <p>詳細な月次レポートを生成します。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-nav">
+                    <a href="#dashboard-overview">概要</a>
+                    <a href="#dashboard-analytics">分析</a>
+                    <a href="#dashboard-reports">レポート</a>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* URLハッシュでセクション切り替え (:target) */<br>
+#dashboard-overview:target {<br>
+&nbsp;&nbsp;display: block;<br>
+}<br>
+<br>
+/* ウィジェットの展開 (:checked) */<br>
+.widget input:checked ~ .widget-details {<br>
+&nbsp;&nbsp;max-height: 500px;<br>
+}
+            </div>
+        </section>
+
+        <!-- 実用例3: フィルター付きギャラリー -->
+        <section style="margin-top: 50px;">
+            <h2 style="color: #667eea; margin-bottom: 20px;">
+                実用例3: フィルター付きギャラリー
+                <span class="technique-badge badge-checked">:checked</span>
+            </h2>
+
+            <div class="gallery-app">
+                <input type="checkbox" id="filter-nature">
+                <input type="checkbox" id="filter-tech">
+                <input type="checkbox" id="filter-art">
+
+                <div class="gallery-filters">
+                    <label for="filter-nature">🌿 自然</label>
+                    <label for="filter-tech">💻 テクノロジー</label>
+                    <label for="filter-art">🎨 アート</label>
+                </div>
+
+                <div class="gallery-grid">
+                    <div class="gallery-item" data-category="nature">
+                        <div class="gallery-item-image" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">🌲</div>
+                        <div class="gallery-item-info">
+                            <div class="gallery-item-title">森林</div>
+                            <div class="gallery-item-category">自然</div>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item" data-category="tech">
+                        <div class="gallery-item-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">💻</div>
+                        <div class="gallery-item-info">
+                            <div class="gallery-item-title">コンピューター</div>
+                            <div class="gallery-item-category">テクノロジー</div>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item" data-category="art">
+                        <div class="gallery-item-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🎨</div>
+                        <div class="gallery-item-info">
+                            <div class="gallery-item-title">絵画</div>
+                            <div class="gallery-item-category">アート</div>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item" data-category="nature tech">
+                        <div class="gallery-item-image" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🌍</div>
+                        <div class="gallery-item-info">
+                            <div class="gallery-item-title">環境技術</div>
+                            <div class="gallery-item-category">自然 / テクノロジー</div>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item" data-category="art">
+                        <div class="gallery-item-image" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">🖼️</div>
+                        <div class="gallery-item-info">
+                            <div class="gallery-item-title">デジタルアート</div>
+                            <div class="gallery-item-category">アート</div>
+                        </div>
+                    </div>
+
+                    <div class="gallery-item" data-category="nature">
+                        <div class="gallery-item-image" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">🌸</div>
+                        <div class="gallery-item-info">
+                            <div class="gallery-item-title">花</div>
+                            <div class="gallery-item-category">自然</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* 複数のBool値でフィルタリング */<br>
+#filter-nature:checked ~ .gallery-grid .gallery-item:not([data-category~="nature"]) {<br>
+&nbsp;&nbsp;display: none;<br>
+}<br>
+<br>
+/* 複数フィルターのOR条件 */<br>
+#filter-nature:checked ~ #filter-tech:checked ~ .gallery-grid .gallery-item[data-category~="nature"],<br>
+#filter-nature:checked ~ #filter-tech:checked ~ .gallery-grid .gallery-item[data-category~="tech"] {<br>
+&nbsp;&nbsp;display: block;<br>
+}
+            </div>
+        </section>
+
+        <!-- 実用例4: モーダルとサイドバー -->
+        <section style="margin-top: 50px;">
+            <h2 style="color: #667eea; margin-bottom: 20px;">
+                実用例4: アプリケーションレイアウト
+                <span class="technique-badge badge-checked">:checked</span>
+            </h2>
+
+            <input type="checkbox" id="sidebar-toggle" checked>
+            <label for="sidebar-toggle" class="sidebar-toggle-btn">サイドバーを切り替え</label>
+
+            <div class="app-layout">
+                <aside class="sidebar">
+                    <h3>メニュー</h3>
+                    <ul class="sidebar-menu">
+                        <li><a href="#">ダッシュボード</a></li>
+                        <li><a href="#">プロジェクト</a></li>
+                        <li><a href="#">タスク</a></li>
+                        <li><a href="#">設定</a></li>
+                    </ul>
+                </aside>
+
+                <main class="main-content">
+                    <h3 style="color: #667eea; margin-bottom: 20px;">メインコンテンツ</h3>
+                    <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                        サイドバーの表示/非表示をCSSのBool値で制御しています。
+                        モーダルダイアログも同様にBool値で管理されています。
+                    </p>
+
+                    <div class="modal-trigger">
+                        <input type="checkbox" id="modal-info">
+                        <label for="modal-info">情報モーダルを開く</label>
+                        
+                        <div class="modal-overlay">
+                            <div class="modal-content">
+                                <h3>情報</h3>
+                                <p>これはCSSだけで実装されたモーダルダイアログです。</p>
+                                <p>JavaScriptは一切使用していません。</p>
+                                <label for="modal-info" class="close-modal">閉じる</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-trigger">
+                        <input type="checkbox" id="modal-confirm">
+                        <label for="modal-confirm">確認モーダルを開く</label>
+                        
+                        <div class="modal-overlay">
+                            <div class="modal-content">
+                                <h3>確認</h3>
+                                <p>この操作を実行してもよろしいですか？</p>
+                                <label for="modal-confirm" class="close-modal">キャンセル</label>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <div class="code-example">
+/* サイドバーの表示/非表示 */<br>
+#sidebar-toggle:not(:checked) ~ .app-layout .sidebar {<br>
+&nbsp;&nbsp;width: 0;<br>
+&nbsp;&nbsp;padding: 0;<br>
+}<br>
+<br>
+/* モーダルの表示 */<br>
+.modal-trigger input:checked ~ .modal-overlay {<br>
+&nbsp;&nbsp;display: block;<br>
+}
+            </div>
+        </section>
+
+        <!-- 実用例5: 検索とフィルター -->
+        <section style="margin-top: 50px;">
+            <h2 style="color: #667eea; margin-bottom: 20px;">
+                実用例5: 検索インターフェース
+                <span class="technique-badge badge-focus">:focus-within</span>
+                <span class="technique-badge badge-checked">:checked</span>
+            </h2>
+
+            <div class="search-filter-app">
+                <div class="search-bar">
+                    <input type="text" placeholder="検索...">
+                    <div class="search-suggestions">
+                        <div class="suggestion-item">検索候補 1</div>
+                        <div class="suggestion-item">検索候補 2</div>
+                        <div class="suggestion-item">検索候補 3</div>
+                        <div class="suggestion-item">検索候補 4</div>
+                    </div>
+                </div>
+
+                <input type="radio" name="sort" id="sort-newest" checked>
+                <input type="radio" name="sort" id="sort-popular">
+                <input type="radio" name="sort" id="sort-relevant">
+
+                <div class="filter-options">
+                    <label for="sort-newest">最新</label>
+                    <label for="sort-popular">人気</label>
+                    <label for="sort-relevant">関連性</label>
+                </div>
+
+                <div class="results-grid">
+                    <div class="result-card">
+                        <h4>検索結果 1</h4>
+                        <p>これは検索結果の説明文です。関連する情報が表示されます。</p>
+                        <span class="result-badge">新着</span>
+                    </div>
+
+                    <div class="result-card">
+                        <h4>検索結果 2</h4>
+                        <p>フィルターとソート機能を組み合わせた実用的な例です。</p>
+                        <span class="result-badge">人気</span>
+                    </div>
+
+                    <div class="result-card">
+                        <h4>検索結果 3</h4>
+                        <p>CSSだけで実装された検索インターフェースです。</p>
+                        <span class="result-badge">おすすめ</span>
+                    </div>
+
+                    <div class="result-card">
+                        <h4>検索結果 4</h4>
+                        <p>複数のBool値を組み合わせて複雑な機能を実現しています。</p>
+                        <span class="result-badge">新着</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* 検索候補の表示 (:focus-within) */<br>
+.search-bar:focus-within .search-suggestions {<br>
+&nbsp;&nbsp;max-height: 300px;<br>
+}<br>
+<br>
+/* ソートオプションの選択 (:checked) */<br>
+.filter-options input:checked + label {<br>
+&nbsp;&nbsp;background: #667eea;<br>
+&nbsp;&nbsp;color: white;<br>
+}
+            </div>
+        </section>
+
+        <div class="info-box" style="margin-top: 50px;">
+            <strong>まとめ</strong>
+            これらの実用例は、:checked、:target、:focus-withinの3つの手法を組み合わせることで、
+            JavaScriptを使用せずに複雑なインタラクティブUIを実装できることを示しています。
+            <br><br>
+            各手法の特性を理解し、適切に組み合わせることで、
+            パフォーマンスが高く、アクセシビリティに優れたWebアプリケーションを構築できます。
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Bool値管理: :checked 疑似クラス</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .description {
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        /* ========================================
+           例1: トグルスイッチ（基本的なBool値）
+           ======================================== */
+        .toggle-switch {
+            margin: 20px 0;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-switch label {
+            display: inline-block;
+            width: 80px;
+            height: 40px;
+            background: #ccc;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch label::after {
+            content: '';
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            top: 4px;
+            left: 4px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Bool値がtrueの時 */
+        .toggle-switch input[type="checkbox"]:checked + label {
+            background: #4CAF50;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked + label::after {
+            transform: translateX(40px);
+        }
+
+        .status-display {
+            display: inline-block;
+            margin-left: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        /* デフォルト状態（false） */
+        .toggle-switch input[type="checkbox"] ~ .status-display {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .toggle-switch input[type="checkbox"] ~ .status-display::before {
+            content: 'OFF (false)';
+        }
+
+        /* チェック状態（true） */
+        .toggle-switch input[type="checkbox"]:checked ~ .status-display {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked ~ .status-display::before {
+            content: 'ON (true)';
+        }
+
+        /* ========================================
+           例2: タブUI（複数のBool値管理）
+           ======================================== */
+        .tabs {
+            margin: 20px 0;
+        }
+
+        .tabs input[type="radio"] {
+            display: none;
+        }
+
+        .tab-labels {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-labels label {
+            flex: 1;
+            padding: 15px;
+            background: #e0e0e0;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .tab-labels label:hover {
+            background: #d0d0d0;
+        }
+
+        /* アクティブなタブ（Bool値がtrue） */
+        .tabs input[type="radio"]:checked + label {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            background: white;
+            border-radius: 0 0 8px 8px;
+            border: 2px solid #667eea;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 対応するラジオボタンがチェックされた時にコンテンツを表示 */
+        #tab1:checked ~ .tab-contents #content1,
+        #tab2:checked ~ .tab-contents #content2,
+        #tab3:checked ~ .tab-contents #content3 {
+            display: block;
+        }
+
+        /* ========================================
+           例3: アコーディオン（複数の独立したBool値）
+           ======================================== */
+        .accordion {
+            margin: 20px 0;
+        }
+
+        .accordion-item {
+            margin-bottom: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .accordion-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .accordion-header {
+            display: block;
+            padding: 20px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            position: relative;
+        }
+
+        .accordion-header:hover {
+            background: #5568d3;
+        }
+
+        .accordion-header::after {
+            content: '▼';
+            position: absolute;
+            right: 20px;
+            transition: transform 0.3s;
+        }
+
+        /* 開いている状態（Bool値がtrue） */
+        .accordion-item input[type="checkbox"]:checked + .accordion-header::after {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            background: white;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .accordion-content-inner {
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* チェックされた時にコンテンツを表示 */
+        .accordion-item input[type="checkbox"]:checked ~ .accordion-content {
+            max-height: 500px;
+        }
+
+        /* ========================================
+           例4: モーダルダイアログ（Bool値で表示制御）
+           ======================================== */
+        .modal-trigger input[type="checkbox"] {
+            display: none;
+        }
+
+        .modal-trigger label {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .modal-trigger label:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translate(-50%, -60%); opacity: 0; }
+            to { transform: translate(-50%, -50%); opacity: 1; }
+        }
+
+        /* モーダルを開く（Bool値がtrue） */
+        .modal-trigger input[type="checkbox"]:checked ~ .modal-overlay {
+            display: block;
+        }
+
+        .close-modal {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .close-modal:hover {
+            background: #5568d3;
+        }
+
+        /* ========================================
+           例5: 条件付き表示（複数のBool値の組み合わせ）
+           ======================================== */
+        .conditional-display {
+            margin: 20px 0;
+        }
+
+        .condition-controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .condition-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .condition-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .condition-item label {
+            display: block;
+            padding: 15px;
+            background: #e0e0e0;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .condition-item input[type="checkbox"]:checked + label {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .result-display {
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        /* デフォルト: すべてfalse */
+        .result-display::before {
+            content: '条件A、B、Cのいずれかをtrueにしてください';
+            color: #999;
+        }
+
+        /* 条件Aのみtrue */
+        #condA:checked ~ .result-display::before {
+            content: '条件A = true';
+            color: #2196F3;
+        }
+
+        /* 条件Bのみtrue */
+        #condB:checked ~ .result-display::before {
+            content: '条件B = true';
+            color: #FF9800;
+        }
+
+        /* 条件Cのみtrue */
+        #condC:checked ~ .result-display::before {
+            content: '条件C = true';
+            color: #9C27B0;
+        }
+
+        /* 条件AとBがtrue */
+        #condA:checked ~ #condB:checked ~ .result-display::before {
+            content: '条件A AND B = true';
+            color: #4CAF50;
+        }
+
+        /* 条件AとCがtrue */
+        #condA:checked ~ #condC:checked ~ .result-display::before {
+            content: '条件A AND C = true';
+            color: #E91E63;
+        }
+
+        /* 条件BとCがtrue */
+        #condB:checked ~ #condC:checked ~ .result-display::before {
+            content: '条件B AND C = true';
+            color: #00BCD4;
+        }
+
+        /* すべての条件がtrue */
+        #condA:checked ~ #condB:checked ~ #condC:checked ~ .result-display::before {
+            content: '🎉 すべての条件 = true 🎉';
+            color: #F44336;
+        }
+
+        .code-example {
+            margin-top: 20px;
+            padding: 15px;
+            background: #263238;
+            color: #aed581;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 CSS Bool値管理: :checked 疑似クラス</h1>
+        <p class="subtitle">チェックボックスとラジオボタンを使用したBool値の保存・変更・参照</p>
+
+        <!-- 例1: トグルスイッチ -->
+        <div class="section">
+            <h2>例1: トグルスイッチ（基本的なBool値）</h2>
+            <div class="description">
+                最もシンプルなBool値の実装。チェックボックスの状態（checked/unchecked）を
+                Bool値（true/false）として扱います。
+            </div>
+            
+            <div class="toggle-switch">
+                <input type="checkbox" id="toggle1">
+                <label for="toggle1"></label>
+                <span class="status-display"></span>
+            </div>
+
+            <div class="code-example">
+/* Bool値がtrueの時のスタイル */<br>
+input[type="checkbox"]:checked + label {<br>
+&nbsp;&nbsp;background: #4CAF50;<br>
+}<br>
+<br>
+/* Bool値を参照して他の要素を制御 */<br>
+input[type="checkbox"]:checked ~ .status-display {<br>
+&nbsp;&nbsp;background: #e8f5e9;<br>
+&nbsp;&nbsp;color: #2e7d32;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例2: タブUI -->
+        <div class="section">
+            <h2>例2: タブUI（複数のBool値管理）</h2>
+            <div class="description">
+                ラジオボタンを使用して、複数のBool値のうち1つだけをtrueにする排他的な状態管理。
+                タブUIの実装に最適です。
+            </div>
+
+            <div class="tabs">
+                <input type="radio" name="tabs" id="tab1" checked>
+                <input type="radio" name="tabs" id="tab2">
+                <input type="radio" name="tabs" id="tab3">
+                
+                <div class="tab-labels">
+                    <label for="tab1">タブ1 (Bool1)</label>
+                    <label for="tab2">タブ2 (Bool2)</label>
+                    <label for="tab3">タブ3 (Bool3)</label>
+                </div>
+
+                <div class="tab-contents">
+                    <div class="tab-content" id="content1">
+                        <h3>タブ1のコンテンツ</h3>
+                        <p>Bool1 = true の時に表示されます。他のBool値は自動的にfalseになります。</p>
+                    </div>
+                    <div class="tab-content" id="content2">
+                        <h3>タブ2のコンテンツ</h3>
+                        <p>Bool2 = true の時に表示されます。ラジオボタンの特性により、排他的な状態管理が可能です。</p>
+                    </div>
+                    <div class="tab-content" id="content3">
+                        <h3>タブ3のコンテンツ</h3>
+                        <p>Bool3 = true の時に表示されます。JavaScriptなしで実装できます。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* 特定のラジオボタンがtrueの時にコンテンツを表示 */<br>
+#tab1:checked ~ .tab-contents #content1 {<br>
+&nbsp;&nbsp;display: block;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例3: アコーディオン -->
+        <div class="section">
+            <h2>例3: アコーディオン（複数の独立したBool値）</h2>
+            <div class="description">
+                各項目が独立したBool値を持ち、複数の項目を同時に開くことができます。
+            </div>
+
+            <div class="accordion">
+                <div class="accordion-item">
+                    <input type="checkbox" id="acc1">
+                    <label class="accordion-header" for="acc1">セクション1（Bool値1）</label>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            このセクションのBool値がtrueの時に表示されます。
+                            他のセクションとは独立して開閉できます。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <input type="checkbox" id="acc2">
+                    <label class="accordion-header" for="acc2">セクション2（Bool値2）</label>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            各セクションは独立したBool値を持っているため、
+                            複数のセクションを同時に開くことができます。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <input type="checkbox" id="acc3">
+                    <label class="accordion-header" for="acc3">セクション3（Bool値3）</label>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            CSSのmax-heightとtransitionを使用して、
+                            スムーズなアニメーションを実現しています。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* Bool値がtrueの時にコンテンツを表示 */<br>
+.accordion-item input:checked ~ .accordion-content {<br>
+&nbsp;&nbsp;max-height: 500px;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例4: モーダルダイアログ -->
+        <div class="section">
+            <h2>例4: モーダルダイアログ（Bool値で表示制御）</h2>
+            <div class="description">
+                Bool値を使用してモーダルの表示/非表示を制御します。
+            </div>
+
+            <div class="modal-trigger">
+                <input type="checkbox" id="modal1">
+                <label for="modal1">モーダルを開く（Bool値をtrueに）</label>
+                
+                <div class="modal-overlay">
+                    <div class="modal-content">
+                        <h3>モーダルダイアログ</h3>
+                        <p>Bool値がtrueの時に表示されます。</p>
+                        <p>このモーダルはCSSだけで実装されており、JavaScriptは使用していません。</p>
+                        <label for="modal1" class="close-modal">閉じる（Bool値をfalseに）</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* Bool値がtrueの時にモーダルを表示 */<br>
+input:checked ~ .modal-overlay {<br>
+&nbsp;&nbsp;display: block;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例5: 条件付き表示 -->
+        <div class="section">
+            <h2>例5: 条件付き表示（複数のBool値の組み合わせ）</h2>
+            <div class="description">
+                複数のBool値を組み合わせて、複雑な条件分岐を実現します。
+                AND条件やOR条件を表現できます。
+            </div>
+
+            <div class="conditional-display">
+                <div class="condition-controls">
+                    <div class="condition-item">
+                        <input type="checkbox" id="condA">
+                        <label for="condA">条件A</label>
+                    </div>
+                    <div class="condition-item">
+                        <input type="checkbox" id="condB">
+                        <label for="condB">条件B</label>
+                    </div>
+                    <div class="condition-item">
+                        <input type="checkbox" id="condC">
+                        <label for="condC">条件C</label>
+                    </div>
+                </div>
+
+                <div class="result-display"></div>
+            </div>
+
+            <div class="code-example">
+/* 複数のBool値のAND条件 */<br>
+#condA:checked ~ #condB:checked ~ .result {<br>
+&nbsp;&nbsp;/* 条件AとBが両方trueの時 */<br>
+}<br>
+<br>
+/* 3つのBool値のAND条件 */<br>
+#condA:checked ~ #condB:checked ~ #condC:checked ~ .result {<br>
+&nbsp;&nbsp;/* すべての条件がtrueの時 */<br>
+}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

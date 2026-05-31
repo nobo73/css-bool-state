@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Bool値管理: :focus-within 疑似クラス</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #00d2ff;
+        }
+
+        .section h2 {
+            color: #00d2ff;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .description {
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .info-box {
+            padding: 15px;
+            background: #e1f5fe;
+            border-left: 4px solid #0288d1;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #01579b;
+        }
+
+        .warning-box {
+            padding: 15px;
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #e65100;
+        }
+
+        /* ========================================
+           例1: ドロップダウンメニュー（フォーカスベースのBool値）
+           ======================================== */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin: 20px;
+        }
+
+        .dropdown-trigger {
+            padding: 15px 30px;
+            background: #00d2ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dropdown-trigger:hover {
+            background: #00b8e6;
+        }
+
+        .dropdown-trigger:focus {
+            outline: 3px solid #80e5ff;
+            outline-offset: 2px;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .dropdown-menu a:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .dropdown-menu a:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+
+        .dropdown-menu a:hover {
+            background: #f0f0f0;
+        }
+
+        /* Bool値がtrue（フォーカスが内部にある時） */
+        .dropdown:focus-within .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown:focus-within .dropdown-trigger {
+            background: #0099cc;
+        }
+
+        /* ========================================
+           例2: 検索ボックス（拡張型）
+           ======================================== */
+        .search-container {
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .search-box {
+            width: 300px;
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #00d2ff;
+            box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.1);
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s;
+        }
+
+        .search-suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-suggestion-item:hover {
+            background: #f0f0f0;
+        }
+
+        /* フォーカスが内部にある時（Bool値 = true） */
+        .search-container:focus-within .search-box {
+            width: 500px;
+            border-color: #00d2ff;
+        }
+
+        .search-container:focus-within .search-suggestions {
+            max-height: 300px;
+        }
+
+        /* ========================================
+           例3: フォームセクション（アクティブ状態の視覚化）
+           ======================================== */
+        .form-section {
+            margin: 20px 0;
+            padding: 25px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .form-section h3 {
+            color: #666;
+            margin-bottom: 15px;
+            transition: color 0.3s;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00d2ff;
+        }
+
+        /* セクション内にフォーカスがある時（Bool値 = true） */
+        .form-section:focus-within {
+            border-color: #00d2ff;
+            box-shadow: 0 5px 20px rgba(0, 210, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .form-section:focus-within h3 {
+            color: #00d2ff;
+        }
+
+        /* ========================================
+           例4: ナビゲーションメニュー（マルチレベル）
+           ======================================== */
+        .nav-menu {
+            background: #333;
+            border-radius: 8px;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .nav-menu ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-menu > ul > li {
+            position: relative;
+        }
+
+        .nav-menu a {
+            display: block;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .nav-menu > ul > li > a:hover {
+            background: #444;
+        }
+
+        .nav-submenu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #444;
+            min-width: 200px;
+            border-radius: 0 0 8px 8px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+
+        .nav-submenu li {
+            border-top: 1px solid #555;
+        }
+
+        .nav-submenu a:hover {
+            background: #555;
+        }
+
+        /* 親要素にフォーカスがある時（Bool値 = true） */
+        .nav-menu li:focus-within > .nav-submenu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .nav-menu li:focus-within > a {
+            background: #00d2ff;
+        }
+
+        /* ========================================
+           例5: カード展開（詳細表示）
+           ======================================== */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .card h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .card-summary {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .card-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s;
+            margin-top: 0;
+        }
+
+        .card-details-content {
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .card input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .card input[type="text"]:focus {
+            outline: none;
+            border-color: #00d2ff;
+        }
+
+        /* カード内にフォーカスがある時（Bool値 = true） */
+        .card:focus-within {
+            border-color: #00d2ff;
+            box-shadow: 0 5px 20px rgba(0, 210, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .card:focus-within .card-details {
+            max-height: 500px;
+        }
+
+        /* ========================================
+           例6: チャットインターフェース
+           ======================================== */
+        .chat-container {
+            margin: 20px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .chat-messages {
+            height: 200px;
+            padding: 20px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            max-width: 70%;
+        }
+
+        .chat-input-area {
+            padding: 15px 20px;
+            background: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #00d2ff;
+        }
+
+        .chat-send-button {
+            padding: 10px 20px;
+            background: #00d2ff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .chat-send-button:hover {
+            background: #00b8e6;
+        }
+
+        /* チャット入力エリアにフォーカスがある時（Bool値 = true） */
+        .chat-container:focus-within {
+            border-color: #00d2ff;
+            box-shadow: 0 5px 20px rgba(0, 210, 255, 0.2);
+        }
+
+        .chat-container:focus-within .chat-header {
+            background: #00d2ff;
+            color: white;
+        }
+
+        /* ========================================
+           例7: ツールチップ（フォーカスベース）
+           ======================================== */
+        .tooltip-container {
+            display: inline-block;
+            position: relative;
+            margin: 20px;
+        }
+
+        .tooltip-trigger {
+            padding: 10px 20px;
+            background: #00d2ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tooltip-trigger:focus {
+            outline: 3px solid #80e5ff;
+            outline-offset: 2px;
+        }
+
+        .tooltip-content {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tooltip-content::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #333;
+        }
+
+        /* フォーカスがある時（Bool値 = true） */
+        .tooltip-container:focus-within .tooltip-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .code-example {
+            margin-top: 20px;
+            padding: 15px;
+            background: #263238;
+            color: #aed581;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 CSS Bool値管理: :focus-within 疑似クラス</h1>
+        <p class="subtitle">フォーカス状態を使用したBool値の保存・変更・参照</p>
+
+        <div class="info-box">
+            <strong>💡 :focus-within疑似クラスの特徴:</strong><br>
+            • 要素自身または子孫要素にフォーカスがある時にマッチ<br>
+            • ユーザーインタラクション中のみ有効（一時的なBool値）<br>
+            • アクセシビリティに優れた実装が可能<br>
+            • キーボードナビゲーションに対応
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ 制限事項:</strong><br>
+            • フォーカスが外れると状態が失われる（永続的な保存には不向き）<br>
+            • フォーカス可能な要素（input, button, aなど）が必要<br>
+            • セッション全体での状態保持には:checkedや:targetの方が適している
+        </div>
+
+        <!-- 例1: ドロップダウンメニュー -->
+        <div class="section">
+            <h2>例1: ドロップダウンメニュー（フォーカスベースのBool値）</h2>
+            <div class="description">
+                ボタンやメニュー項目にフォーカスがある間、メニューを表示します。
+                Bool値 = フォーカスの有無
+            </div>
+
+            <div class="dropdown">
+                <button class="dropdown-trigger" tabindex="0">メニューを開く</button>
+                <div class="dropdown-menu">
+                    <a href="#" tabindex="0">オプション 1</a>
+                    <a href="#" tabindex="0">オプション 2</a>
+                    <a href="#" tabindex="0">オプション 3</a>
+                    <a href="#" tabindex="0">オプション 4</a>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* フォーカスが内部にある時（Bool値 = true） */<br>
+.dropdown:focus-within .dropdown-menu {<br>
+&nbsp;&nbsp;opacity: 1;<br>
+&nbsp;&nbsp;visibility: visible;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例2: 検索ボックス -->
+        <div class="section">
+            <h2>例2: 検索ボックス（拡張型）</h2>
+            <div class="description">
+                検索ボックスにフォーカスすると、ボックスが拡張され、候補が表示されます。
+            </div>
+
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="検索..." tabindex="0">
+                <div class="search-suggestions">
+                    <div class="search-suggestion-item">検索候補 1</div>
+                    <div class="search-suggestion-item">検索候補 2</div>
+                    <div class="search-suggestion-item">検索候補 3</div>
+                    <div class="search-suggestion-item">検索候補 4</div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* フォーカス時に検索ボックスを拡張 */<br>
+.search-container:focus-within .search-box {<br>
+&nbsp;&nbsp;width: 500px;<br>
+}<br>
+<br>
+/* 候補を表示 */<br>
+.search-container:focus-within .search-suggestions {<br>
+&nbsp;&nbsp;max-height: 300px;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例3: フォームセクション -->
+        <div class="section">
+            <h2>例3: フォームセクション（アクティブ状態の視覚化）</h2>
+            <div class="description">
+                フォームセクション内のいずれかのフィールドにフォーカスすると、
+                セクション全体がハイライトされます。
+            </div>
+
+            <div class="form-section">
+                <h3>個人情報</h3>
+                <div class="form-group">
+                    <label for="name">名前</label>
+                    <input type="text" id="name" tabindex="0">
+                </div>
+                <div class="form-group">
+                    <label for="email">メールアドレス</label>
+                    <input type="email" id="email" tabindex="0">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>住所情報</h3>
+                <div class="form-group">
+                    <label for="address">住所</label>
+                    <input type="text" id="address" tabindex="0">
+                </div>
+                <div class="form-group">
+                    <label for="city">市区町村</label>
+                    <input type="text" id="city" tabindex="0">
+                </div>
+            </div>
+
+            <div class="code-example">
+/* セクション内にフォーカスがある時 */<br>
+.form-section:focus-within {<br>
+&nbsp;&nbsp;border-color: #00d2ff;<br>
+&nbsp;&nbsp;box-shadow: 0 5px 20px rgba(0, 210, 255, 0.2);<br>
+}
+            </div>
+        </div>
+
+        <!-- 例4: ナビゲーションメニュー -->
+        <div class="section">
+            <h2>例4: ナビゲーションメニュー（マルチレベル）</h2>
+            <div class="description">
+                キーボードナビゲーションに対応したマルチレベルメニュー。
+                親要素にフォーカスがある間、サブメニューを表示します。
+            </div>
+
+            <nav class="nav-menu">
+                <ul>
+                    <li>
+                        <a href="#" tabindex="0">ホーム</a>
+                    </li>
+                    <li>
+                        <a href="#" tabindex="0">製品</a>
+                        <ul class="nav-submenu">
+                            <li><a href="#" tabindex="0">製品 A</a></li>
+                            <li><a href="#" tabindex="0">製品 B</a></li>
+                            <li><a href="#" tabindex="0">製品 C</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#" tabindex="0">サービス</a>
+                        <ul class="nav-submenu">
+                            <li><a href="#" tabindex="0">サービス 1</a></li>
+                            <li><a href="#" tabindex="0">サービス 2</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#" tabindex="0">お問い合わせ</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="code-example">
+/* 親要素にフォーカスがある時にサブメニューを表示 */<br>
+.nav-menu li:focus-within > .nav-submenu {<br>
+&nbsp;&nbsp;opacity: 1;<br>
+&nbsp;&nbsp;visibility: visible;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例5: カード展開 -->
+        <div class="section">
+            <h2>例5: カード展開（詳細表示）</h2>
+            <div class="description">
+                カード内の入力フィールドにフォーカスすると、詳細情報が展開されます。
+            </div>
+
+            <div class="card-container">
+                <div class="card" tabindex="0">
+                    <h4>カード 1</h4>
+                    <p class="card-summary">クリックまたはTabキーでフォーカスしてください</p>
+                    <input type="text" placeholder="詳細を見るにはここをクリック" tabindex="0">
+                    <div class="card-details">
+                        <div class="card-details-content">
+                            フォーカスがある間、この詳細情報が表示されます。
+                            これはBool値がtrueの状態です。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" tabindex="0">
+                    <h4>カード 2</h4>
+                    <p class="card-summary">各カードは独立したBool値を持ちます</p>
+                    <input type="text" placeholder="詳細を見るにはここをクリック" tabindex="0">
+                    <div class="card-details">
+                        <div class="card-details-content">
+                            :focus-withinを使用すると、子要素のフォーカス状態を
+                            親要素で検知できます。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" tabindex="0">
+                    <h4>カード 3</h4>
+                    <p class="card-summary">アクセシビリティに優れた実装</p>
+                    <input type="text" placeholder="詳細を見るにはここをクリック" tabindex="0">
+                    <div class="card-details">
+                        <div class="card-details-content">
+                            キーボードナビゲーションに完全対応しており、
+                            スクリーンリーダーでも利用可能です。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* カード内にフォーカスがある時に詳細を表示 */<br>
+.card:focus-within .card-details {<br>
+&nbsp;&nbsp;max-height: 500px;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例6: チャットインターフェース -->
+        <div class="section">
+            <h2>例6: チャットインターフェース</h2>
+            <div class="description">
+                入力エリアにフォーカスすると、チャットウィンドウ全体がアクティブ状態になります。
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-header">チャット</div>
+                <div class="chat-messages">
+                    <div class="chat-message">こんにちは！</div>
+                    <div class="chat-message">:focus-withinのデモです</div>
+                    <div class="chat-message">入力エリアにフォーカスしてみてください</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" placeholder="メッセージを入力..." tabindex="0">
+                    <button class="chat-send-button" tabindex="0">送信</button>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* チャット入力エリアにフォーカスがある時 */<br>
+.chat-container:focus-within {<br>
+&nbsp;&nbsp;border-color: #00d2ff;<br>
+&nbsp;&nbsp;box-shadow: 0 5px 20px rgba(0, 210, 255, 0.2);<br>
+}<br>
+<br>
+.chat-container:focus-within .chat-header {<br>
+&nbsp;&nbsp;background: #00d2ff;<br>
+&nbsp;&nbsp;color: white;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例7: ツールチップ -->
+        <div class="section">
+            <h2>例7: ツールチップ（フォーカスベース）</h2>
+            <div class="description">
+                ボタンにフォーカスすると、ツールチップが表示されます。
+                アクセシビリティに配慮した実装です。
+            </div>
+
+            <div style="text-align: center; padding: 40px 0;">
+                <div class="tooltip-container">
+                    <button class="tooltip-trigger" tabindex="0">ボタン 1</button>
+                    <div class="tooltip-content">これはツールチップです</div>
+                </div>
+
+                <div class="tooltip-container">
+                    <button class="tooltip-trigger" tabindex="0">ボタン 2</button>
+                    <div class="tooltip-content">フォーカス時に表示されます</div>
+                </div>
+
+                <div class="tooltip-container">
+                    <button class="tooltip-trigger" tabindex="0">ボタン 3</button>
+                    <div class="tooltip-content">キーボードでも操作可能</div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* フォーカスがある時にツールチップを表示 */<br>
+.tooltip-container:focus-within .tooltip-content {<br>
+&nbsp;&nbsp;opacity: 1;<br>
+&nbsp;&nbsp;visibility: visible;<br>
+}
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>🎯 :focus-withinの使用場面:</strong><br>
+            • ドロップダウンメニュー、サブメニュー<br>
+            • 検索ボックスの拡張と候補表示<br>
+            • フォームセクションのハイライト<br>
+            • カードやパネルの展開<br>
+            • ツールチップの表示<br>
+            • チャットやコメント入力エリアのアクティブ状態<br>
+            <br>
+            <strong>注意:</strong> 永続的な状態保存が必要な場合は、:checkedや:targetを使用してください。
+        </div>
+    </div>
+</body>
+</html>

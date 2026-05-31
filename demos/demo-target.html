@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Bool値管理: :target 疑似クラス</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #f5576c;
+        }
+
+        .section h2 {
+            color: #f5576c;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .description {
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .info-box {
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404;
+        }
+
+        /* ========================================
+           例1: シンプルなBool値トグル
+           ======================================== */
+        .target-toggle {
+            margin: 20px 0;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-buttons a {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            text-decoration: none;
+            background: #e0e0e0;
+            color: #333;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .toggle-buttons a:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .state-display {
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        /* デフォルト状態（Bool値 = false） */
+        #state-false {
+            display: block;
+        }
+
+        #state-false .state-display {
+            background: #ffebee;
+            border-color: #ef5350;
+            color: #c62828;
+        }
+
+        #state-false .state-display::before {
+            content: '❌ Bool値 = FALSE';
+        }
+
+        /* ターゲット状態（Bool値 = true） */
+        #state-true {
+            display: none;
+        }
+
+        #state-true:target {
+            display: block;
+        }
+
+        #state-true:target ~ #state-false {
+            display: none;
+        }
+
+        #state-true .state-display {
+            background: #e8f5e9;
+            border-color: #66bb6a;
+            color: #2e7d32;
+            animation: pulse 0.5s;
+        }
+
+        #state-true .state-display::before {
+            content: '✅ Bool値 = TRUE';
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* ========================================
+           例2: モーダルダイアログ（URLベースのBool値）
+           ======================================== */
+        .modal-demo a {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #f5576c;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .modal-demo a:hover {
+            background: #e04556;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
+
+        /* Bool値がtrueの時（URLに#modal1が含まれる時） */
+        .modal:target {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content h3 {
+            color: #f5576c;
+            margin-bottom: 20px;
+        }
+
+        .close-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #f5576c;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .close-button:hover {
+            background: #e04556;
+        }
+
+        /* ========================================
+           例3: タブUI（URLハッシュで状態管理）
+           ======================================== */
+        .tab-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab-navigation a {
+            padding: 15px 30px;
+            text-decoration: none;
+            color: #666;
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s;
+            background: #f0f0f0;
+        }
+
+        .tab-navigation a:hover {
+            background: #e0e0e0;
+        }
+
+        .tab-panel {
+            display: none;
+            padding: 30px;
+            background: white;
+            border-radius: 0 8px 8px 8px;
+            border: 2px solid #f5576c;
+            animation: fadeIn 0.3s;
+        }
+
+        /* 対応するタブがターゲットの時に表示（Bool値 = true） */
+        .tab-panel:target {
+            display: block;
+        }
+
+        /* アクティブなタブのスタイル */
+        #tab-panel1:target ~ .tab-navigation a[href="#tab-panel1"],
+        #tab-panel2:target ~ .tab-navigation a[href="#tab-panel2"],
+        #tab-panel3:target ~ .tab-navigation a[href="#tab-panel3"] {
+            background: #f5576c;
+            color: white;
+        }
+
+        /* デフォルトで最初のタブを表示 */
+        .tab-panel:first-of-type:not(:target) {
+            display: block;
+        }
+
+        .tab-navigation a[href="#tab-panel1"] {
+            background: #f5576c;
+            color: white;
+        }
+
+        #tab-panel1:target ~ .tab-navigation a[href="#tab-panel1"],
+        #tab-panel2:target ~ .tab-navigation a[href="#tab-panel1"],
+        #tab-panel3:target ~ .tab-navigation a[href="#tab-panel1"] {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        /* ========================================
+           例4: アコーディオン（複数の独立したBool値）
+           ======================================== */
+        .accordion-target {
+            margin: 20px 0;
+        }
+
+        .accordion-target-item {
+            margin-bottom: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .accordion-target-header {
+            display: block;
+            padding: 20px;
+            background: #f5576c;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+            position: relative;
+        }
+
+        .accordion-target-header:hover {
+            background: #e04556;
+        }
+
+        .accordion-target-header::after {
+            content: '▼';
+            position: absolute;
+            right: 20px;
+            transition: transform 0.3s;
+        }
+
+        .accordion-target-content {
+            max-height: 0;
+            overflow: hidden;
+            background: white;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .accordion-target-content-inner {
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ターゲットされた時（Bool値 = true） */
+        .accordion-target-item:target .accordion-target-content {
+            max-height: 500px;
+        }
+
+        .accordion-target-item:target .accordion-target-header::after {
+            transform: rotate(180deg);
+        }
+
+        /* ========================================
+           例5: ステップバイステップウィザード
+           ======================================== */
+        .wizard {
+            margin: 20px 0;
+        }
+
+        .wizard-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .wizard-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ddd;
+            z-index: 0;
+        }
+
+        .wizard-step-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .wizard-content {
+            display: none;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #f5576c;
+            min-height: 200px;
+        }
+
+        /* 各ステップがターゲットの時 */
+        #step1:target,
+        #step2:target,
+        #step3:target,
+        #step4:target {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* デフォルトで最初のステップを表示 */
+        #step1:not(:target):first-of-type {
+            display: block;
+        }
+
+        /* アクティブなステップのインジケーター */
+        #step1:target ~ .wizard-steps .step1-indicator,
+        #step2:target ~ .wizard-steps .step2-indicator,
+        #step3:target ~ .wizard-steps .step3-indicator,
+        #step4:target ~ .wizard-steps .step4-indicator {
+            background: #f5576c;
+            color: white;
+            transform: scale(1.2);
+        }
+
+        .wizard-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .wizard-navigation a {
+            padding: 10px 20px;
+            background: #f5576c;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .wizard-navigation a:hover {
+            background: #e04556;
+            transform: translateY(-2px);
+        }
+
+        .wizard-navigation a.disabled {
+            background: #ccc;
+            pointer-events: none;
+        }
+
+        /* ========================================
+           例6: 画像ギャラリー（URLベースの選択状態）
+           ======================================== */
+        .gallery {
+            margin: 20px 0;
+        }
+
+        .gallery-thumbnails {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .gallery-thumbnails a {
+            display: block;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            text-align: center;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .gallery-thumbnails a:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .gallery-image {
+            display: none;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #f5576c;
+        }
+
+        .gallery-image:target {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        /* デフォルトで最初の画像を表示 */
+        .gallery-image:first-of-type:not(:target) {
+            display: block;
+        }
+
+        /* アクティブなサムネイル */
+        #img1:target ~ .gallery-thumbnails a[href="#img1"],
+        #img2:target ~ .gallery-thumbnails a[href="#img2"],
+        #img3:target ~ .gallery-thumbnails a[href="#img3"],
+        #img4:target ~ .gallery-thumbnails a[href="#img4"] {
+            border-color: #f5576c;
+            background: #fff0f3;
+        }
+
+        .gallery-image-placeholder {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 0 auto;
+        }
+
+        .code-example {
+            margin-top: 20px;
+            padding: 15px;
+            background: #263238;
+            color: #aed581;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+
+        .url-display {
+            padding: 10px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #1565c0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 CSS Bool値管理: :target 疑似クラス</h1>
+        <p class="subtitle">URLハッシュを使用したBool値の保存・変更・参照</p>
+
+        <div class="info-box">
+            <strong>💡 :target疑似クラスの特徴:</strong><br>
+            • URLのハッシュ（#id）を使用して状態を管理<br>
+            • ブラウザの戻る/進むボタンで履歴管理が可能<br>
+            • ページをリロードしても状態が保持される（URLに含まれるため）<br>
+            • ブックマークやリンク共有で特定の状態を共有可能
+        </div>
+
+        <!-- 例1: シンプルなBool値トグル -->
+        <div class="section">
+            <h2>例1: シンプルなBool値トグル</h2>
+            <div class="description">
+                URLハッシュを使用して、Bool値のtrue/falseを切り替えます。
+                ブラウザの戻るボタンで前の状態に戻ることができます。
+            </div>
+
+            <div class="target-toggle">
+                <div class="toggle-buttons">
+                    <a href="#state-true">Bool値をTRUEに設定</a>
+                    <a href="#state-false">Bool値をFALSEに設定</a>
+                </div>
+
+                <div id="state-true">
+                    <div class="state-display"></div>
+                    <div class="url-display">現在のURL: ...#state-true</div>
+                </div>
+
+                <div id="state-false">
+                    <div class="state-display"></div>
+                    <div class="url-display">現在のURL: ...#state-false (またはハッシュなし)</div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* Bool値がtrueの時（URLに#state-trueが含まれる時） */<br>
+#state-true:target {<br>
+&nbsp;&nbsp;display: block;<br>
+}<br>
+<br>
+/* Bool値がfalseの時は他の要素を非表示に */<br>
+#state-true:target ~ #state-false {<br>
+&nbsp;&nbsp;display: none;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例2: モーダルダイアログ -->
+        <div class="section">
+            <h2>例2: モーダルダイアログ（URLベースのBool値）</h2>
+            <div class="description">
+                URLハッシュを使用してモーダルの表示/非表示を制御します。
+                モーダルを開いた状態でURLを共有できます。
+            </div>
+
+            <div class="modal-demo">
+                <a href="#modal1">モーダル1を開く</a>
+                <a href="#modal2">モーダル2を開く</a>
+                <a href="#modal3">モーダル3を開く</a>
+            </div>
+
+            <div id="modal1" class="modal">
+                <div class="modal-content">
+                    <h3>モーダル1</h3>
+                    <p>このモーダルは #modal1 がURLに含まれる時に表示されます。</p>
+                    <p>Bool値 = true の状態です。</p>
+                    <a href="#" class="close-button">閉じる（Bool値をfalseに）</a>
+                </div>
+            </div>
+
+            <div id="modal2" class="modal">
+                <div class="modal-content">
+                    <h3>モーダル2</h3>
+                    <p>URLハッシュを使用することで、複数の独立したBool値を管理できます。</p>
+                    <p>このモーダルのBool値 = true</p>
+                    <a href="#" class="close-button">閉じる</a>
+                </div>
+            </div>
+
+            <div id="modal3" class="modal">
+                <div class="modal-content">
+                    <h3>モーダル3</h3>
+                    <p>ブラウザの戻るボタンでモーダルを閉じることもできます。</p>
+                    <p>これはネイティブなブラウザ機能です。</p>
+                    <a href="#" class="close-button">閉じる</a>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* モーダルのBool値がtrueの時 */<br>
+.modal:target {<br>
+&nbsp;&nbsp;display: flex;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例3: タブUI -->
+        <div class="section">
+            <h2>例3: タブUI（URLハッシュで状態管理）</h2>
+            <div class="description">
+                各タブの状態をURLで管理します。特定のタブを開いた状態でリンクを共有できます。
+            </div>
+
+            <div class="tabs-target">
+                <div id="tab-panel1" class="tab-panel">
+                    <h3>タブ1のコンテンツ</h3>
+                    <p>URLに #tab-panel1 が含まれる時、このタブのBool値 = true</p>
+                    <p>他のタブのBool値は自動的にfalseになります。</p>
+                </div>
+
+                <div id="tab-panel2" class="tab-panel">
+                    <h3>タブ2のコンテンツ</h3>
+                    <p>URLベースの状態管理により、ページをリロードしても選択されたタブが保持されます。</p>
+                </div>
+
+                <div id="tab-panel3" class="tab-panel">
+                    <h3>タブ3のコンテンツ</h3>
+                    <p>ブラウザの履歴機能を使用して、タブの切り替え履歴を辿ることができます。</p>
+                </div>
+
+                <div class="tab-navigation">
+                    <a href="#tab-panel1">タブ1</a>
+                    <a href="#tab-panel2">タブ2</a>
+                    <a href="#tab-panel3">タブ3</a>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* 対応するタブがターゲットの時に表示 */<br>
+.tab-panel:target {<br>
+&nbsp;&nbsp;display: block;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例4: アコーディオン -->
+        <div class="section">
+            <h2>例4: アコーディオン（複数の独立したBool値）</h2>
+            <div class="description">
+                各セクションが独立したBool値を持ち、URLで状態を管理します。
+            </div>
+
+            <div class="accordion-target">
+                <div id="acc-target1" class="accordion-target-item">
+                    <a href="#acc-target1" class="accordion-target-header">セクション1（クリックして開く）</a>
+                    <div class="accordion-target-content">
+                        <div class="accordion-target-content-inner">
+                            このセクションのBool値がtrueの時に表示されます。
+                            URLに #acc-target1 が含まれます。
+                        </div>
+                    </div>
+                </div>
+
+                <div id="acc-target2" class="accordion-target-item">
+                    <a href="#acc-target2" class="accordion-target-header">セクション2（クリックして開く）</a>
+                    <div class="accordion-target-content">
+                        <div class="accordion-target-content-inner">
+                            :target疑似クラスを使用すると、一度に1つのセクションのみを開くことができます。
+                            これは排他的なBool値管理に適しています。
+                        </div>
+                    </div>
+                </div>
+
+                <div id="acc-target3" class="accordion-target-item">
+                    <a href="#acc-target3" class="accordion-target-header">セクション3（クリックして開く）</a>
+                    <div class="accordion-target-content">
+                        <div class="accordion-target-content-inner">
+                            複数のセクションを同時に開きたい場合は、:checked疑似クラスの方が適しています。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* ターゲットされた時にコンテンツを表示 */<br>
+.accordion-target-item:target .accordion-target-content {<br>
+&nbsp;&nbsp;max-height: 500px;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例5: ステップバイステップウィザード -->
+        <div class="section">
+            <h2>例5: ステップバイステップウィザード</h2>
+            <div class="description">
+                複数のステップを持つフォームやプロセスで、各ステップの状態をURLで管理します。
+            </div>
+
+            <div class="wizard">
+                <div id="step1" class="wizard-content">
+                    <h3>ステップ1: 基本情報</h3>
+                    <p>現在のステップのBool値 = true</p>
+                    <p>URLに #step1 が含まれています。</p>
+                    <div class="wizard-navigation">
+                        <a href="#" class="disabled">← 前へ</a>
+                        <a href="#step2">次へ →</a>
+                    </div>
+                </div>
+
+                <div id="step2" class="wizard-content">
+                    <h3>ステップ2: 詳細設定</h3>
+                    <p>ステップ2のBool値 = true</p>
+                    <p>ブラウザの戻るボタンで前のステップに戻れます。</p>
+                    <div class="wizard-navigation">
+                        <a href="#step1">← 前へ</a>
+                        <a href="#step3">次へ →</a>
+                    </div>
+                </div>
+
+                <div id="step3" class="wizard-content">
+                    <h3>ステップ3: 確認</h3>
+                    <p>ステップ3のBool値 = true</p>
+                    <p>各ステップの状態がURLに保存されるため、ページをリロードしても現在のステップが保持されます。</p>
+                    <div class="wizard-navigation">
+                        <a href="#step2">← 前へ</a>
+                        <a href="#step4">次へ →</a>
+                    </div>
+                </div>
+
+                <div id="step4" class="wizard-content">
+                    <h3>ステップ4: 完了</h3>
+                    <p>最終ステップのBool値 = true</p>
+                    <p>🎉 ウィザードが完了しました！</p>
+                    <div class="wizard-navigation">
+                        <a href="#step3">← 前へ</a>
+                        <a href="#step1">最初に戻る</a>
+                    </div>
+                </div>
+
+                <div class="wizard-steps">
+                    <div class="wizard-step-indicator step1-indicator">1</div>
+                    <div class="wizard-step-indicator step2-indicator">2</div>
+                    <div class="wizard-step-indicator step3-indicator">3</div>
+                    <div class="wizard-step-indicator step4-indicator">4</div>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* 各ステップがターゲットの時に表示 */<br>
+#step1:target,<br>
+#step2:target,<br>
+#step3:target,<br>
+#step4:target {<br>
+&nbsp;&nbsp;display: block;<br>
+}
+            </div>
+        </div>
+
+        <!-- 例6: 画像ギャラリー -->
+        <div class="section">
+            <h2>例6: 画像ギャラリー（URLベースの選択状態）</h2>
+            <div class="description">
+                選択された画像の状態をURLで管理します。特定の画像を開いた状態でリンクを共有できます。
+            </div>
+
+            <div class="gallery">
+                <div id="img1" class="gallery-image">
+                    <div class="gallery-image-placeholder">画像 1</div>
+                    <p style="margin-top: 20px;">画像1が選択されています（Bool値 = true）</p>
+                </div>
+
+                <div id="img2" class="gallery-image">
+                    <div class="gallery-image-placeholder" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">画像 2</div>
+                    <p style="margin-top: 20px;">画像2が選択されています（Bool値 = true）</p>
+                </div>
+
+                <div id="img3" class="gallery-image">
+                    <div class="gallery-image-placeholder" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">画像 3</div>
+                    <p style="margin-top: 20px;">画像3が選択されています（Bool値 = true）</p>
+                </div>
+
+                <div id="img4" class="gallery-image">
+                    <div class="gallery-image-placeholder" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">画像 4</div>
+                    <p style="margin-top: 20px;">画像4が選択されています（Bool値 = true）</p>
+                </div>
+
+                <div class="gallery-thumbnails">
+                    <a href="#img1">📷 画像 1</a>
+                    <a href="#img2">📷 画像 2</a>
+                    <a href="#img3">📷 画像 3</a>
+                    <a href="#img4">📷 画像 4</a>
+                </div>
+            </div>
+
+            <div class="code-example">
+/* 選択された画像を表示 */<br>
+.gallery-image:target {<br>
+&nbsp;&nbsp;display: block;<br>
+}<br>
+<br>
+/* アクティブなサムネイルのスタイル */<br>
+#img1:target ~ .gallery-thumbnails a[href="#img1"] {<br>
+&nbsp;&nbsp;border-color: #f5576c;<br>
+}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
